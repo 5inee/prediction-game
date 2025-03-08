@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PredictBattle - Real-time Prediction Game</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">PredictBattle</div>
+        <div id="userInfo" class="user-info" style="display: none;">
+          <span id="usernameDisplay"></span>
+          <div id="userAvatar" class="avatar">P</div>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Landing / Join Game Screen -->
+  <div id="joinScreen" class="container">
+    <div class="game-card">
+      <h1 class="game-title">Join a Prediction Game</h1>
+      
+      <div class="form-group">
+        <label for="gameId">Game ID:</label>
+        <input type="text" id="gameId" placeholder="Enter 6-character game ID">
+      </div>
+      
+      <div class="form-group">
+        <label for="username">Your Name:</label>
+        <input type="text" id="username" placeholder="Enter your name">
+      </div>
+      
+      <button id="joinGameBtn" class="btn btn-primary">Join Game</button>
+      <div class="separator">OR</div>
+      <button id="createGameBtn" class="btn btn-secondary">Create New Game</button>
+    </div>
+  </div>
+  
+  <!-- Create Game Screen -->
+  <div id="createGameScreen" class="container" style="display: none;">
+    <div class="game-card">
+      <h1 class="game-title">Create a New Game</h1>
+      
+      <div class="form-group">
+        <label for="gameQuestion">Question for Predictions:</label>
+        <textarea id="gameQuestion" placeholder="Enter your question here.."></textarea>
+      </div>
+      
+      <button id="createNewGameBtn" class="btn btn-primary">Create Game</button>
+      <button id="backToJoinBtn" class="btn btn-link">Back</button>
+    </div>
+  </div>
+  
+  <!-- Game Lobby Screen -->
+  <div id="gameScreen" class="container" style="display: none;">
+    <div class="game-card">
+      <h1 id="gameQuestion" class="game-title">Enter your question..</h1>
+      
+      <div id="gameInfo" class="game-info">
+        <div id="gameCode" class="game-code">Game ID: <span></span></div>
+        <div id="waitingMessage" class="waiting-message">Waiting for players to join... <span class="player-count">1/5</span></div>
+      </div>
+      
+      <div id="predictionForm" class="prediction-form">
+        <div class="form-group">
+          <label for="prediction">Your Prediction:</label>
+          <textarea id="prediction" placeholder="Enter your prediction here..."></textarea>
+        </div>
+        <button id="submitPredictionBtn" type="button" class="btn btn-primary">Submit Prediction</button>
+      </div>
+      
+      <div id="statusMessage" class="status-message">
+        Your prediction has been sent. The rest of the competitors' predictions will be revealed when all predictions are submitted.
+      </div>
+      
+      <div id="predictionCount" class="prediction-count"></div>
+      
+      <div id="predictionsList" class="predictions-list">
+        <h3>All Predictions</h3>
+        <div id="predictionsContainer"></div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
