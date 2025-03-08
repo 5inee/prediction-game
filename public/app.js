@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
               ${predictor.username} ${isCurrentUser ? '(You)' : ''}
             </div>
           </div>
-          <div class="timestamp">Submitted at ${timeString}</div>
+          <div class="timestamp">${timeString}</div>
         </div>
         <div class="prediction-content">
           ${formattedPrediction}

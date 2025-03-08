@@ -1,164 +1,87 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const { v4: uuidv4 } = require('uuid');
+const mongoose = require('mongoose');
+const Game = require('./models/Game');
+const Predictor = require('./models/Predictor');
+const Prediction = require('./models/Prediction');
 
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
-
-app.use(express.static('public'));
-app.use(express.json());
-
-// Store active games
-const games = {};
-
-// Function to generate a short game ID
-function generateShortId() {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let shortId = '';
-  for (let i = 0; i < 6; i++) {
-    shortId += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return shortId;
-}
-
-// Create a new game
-app.post('/api/games', (req, res) => {
-  const gameId = generateShortId();
-  games[gameId] = {
-    id: gameId,
-    question: req.body.question || 'Make your prediction',
-    predictions: {},
-    predictors: {},
-    maxPredictors: 5,
-    revealedToAll: false
-  };
-  
-  res.json({ gameId });
+// الاتصال بقاعدة البيانات
+mongoose.connect('mongodb://localhost:27017/prediction-game', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 });
 
-// Join a game
-app.post('/api/games/:gameId/join', (req, res) => {
+// إنشاء جلسة لعبة جديدة
+app.post('/api/games', async (req, res) => {
+  const { question } = req.body;
+  const game = new Game({ question });
+  await game.save();
+  res.json({ gameId: game._id });
+});
+
+// الانضمام إلى جلسة لعبة
+app.post('/api/games/:gameId/join', async (req, res) => {
   const { gameId } = req.params;
   const { username } = req.body;
-  
-  if (!games[gameId]) {
-    return res.status(404).json({ error: 'Game not found' });
+
+  const game = await Game.findById(gameId);
+  if (!game) {
+    return res.status(404).json({ error: 'الجلسة غير موجودة' });
   }
-  
-  const game = games[gameId];
-  const predictorCount = Object.keys(game.predictors).length;
-  
-  if (predictorCount >= game.maxPredictors) {
-    return res.status(400).json({ error: 'Game is full' });
+
+  // التحقق من أن الجلسة ليست ممتلئة
+  const predictorsCount = await Predictor.countDocuments({ gameId });
+  if (predictorsCount >= game.maxPredictors) {
+    return res.status(400).json({ error: 'الجلسة ممتلئة' });
   }
-  
-  const predictorId = uuidv4();
-  game.predictors[predictorId] = {
-    id: predictorId,
-    username,
-    avatarColor: getAvatarColor(predictorCount),
-    joinedAt: new Date()
-  };
-  
-  // Notify all users about the new predictor count
-  io.to(gameId).emit('predictor_update', { 
-    count: Object.keys(game.predictors).length, 
-    total: game.maxPredictors 
-  });
-  
-  res.json({ 
-    predictorId, 
-    game: {
-      id: game.id,
-      question: game.question,
-      predictorCount: Object.keys(game.predictors).length,
-      maxPredictors: game.maxPredictors
-    } 
-  });
+
+  // إضافة اللاعب إلى الجلسة
+  const predictor = new Predictor({ gameId, username, avatarColor: getAvatarColor(predictorsCount) });
+  await predictor.save();
+
+  // إذا كان هذا أول لاعب، نضبط وقت انتهاء الجلسة (3 أيام من الآن)
+  if (predictorsCount === 0) {
+    game.expiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000); // 3 أيام
+    await game.save();
+  }
+
+  res.json({ predictorId: predictor._id, game });
 });
 
-// Submit a prediction
-app.post('/api/games/:gameId/predict', (req, res) => {
+// إرسال تنبؤ
+app.post('/api/games/:gameId/predict', async (req, res) => {
   const { gameId } = req.params;
   const { predictorId, prediction } = req.body;
-  
-  if (!games[gameId]) {
-    return res.status(404).json({ error: 'Game not found' });
-  }
-  
-  const game = games[gameId];
-  
-  if (!game.predictors[predictorId]) {
-    return res.status(403).json({ error: 'Not a valid predictor for this game' });
-  }
-  
-  if (game.predictions[predictorId]) {
-    return res.status(400).json({ error: 'You have already submitted a prediction' });
-  }
-  
-  const timestamp = new Date();
-  game.predictions[predictorId] = {
-    content: prediction,
-    submittedAt: timestamp
-  };
-  
-  const predictionsCount = Object.keys(game.predictions).length;
-  const allPredictionsSubmitted = predictionsCount === game.maxPredictors;
-  
-  // Notify all users about the new prediction count
-  io.to(gameId).emit('prediction_update', { 
-    count: predictionsCount, 
-    total: game.maxPredictors 
-  });
-  
-  // If all predictions submitted, reveal to everyone
-  if (allPredictionsSubmitted && !game.revealedToAll) {
-    game.revealedToAll = true;
-    
-    const revealData = {
-      predictions: Object.keys(game.predictions).map(pid => ({
-        predictor: game.predictors[pid],
-        prediction: game.predictions[pid]
-      }))
-    };
-    
-    io.to(gameId).emit('all_predictions_revealed', revealData);
-  }
-  
-  res.json({ 
-    success: true, 
-    predictionsCount, 
-    allPredictionsSubmitted 
-  });
-});
 
-// Socket.io connection handler
-io.on('connection', (socket) => {
-  console.log('New client connected');
-  
-  socket.on('join_game', (gameId) => {
-    socket.join(gameId);
-  });
-  
-  socket.on('disconnect', () => {
-    console.log('Client disconnected');
-  });
-});
+  const game = await Game.findById(gameId);
+  if (!game) {
+    return res.status(404).json({ error: 'الجلسة غير موجودة' });
+  }
 
-function getAvatarColor(index) {
-  const colors = [
-    '#4361ee', // blue
-    '#3a0ca3', // indigo
-    '#7209b7', // purple
-    '#f72585', // pink
-    '#4cc9f0'  // light blue
-  ];
-  return colors[index % colors.length];
-}
+  // التحقق من أن اللاعب موجود في الجلسة
+  const predictor = await Predictor.findById(predictorId);
+  if (!predictor || predictor.gameId.toString() !== gameId) {
+    return res.status(403).json({ error: 'لاعب غير مسجل في هذه الجلسة' });
+  }
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  // التحقق من أن اللاعب لم يرسل تنبؤًا مسبقًا
+  const existingPrediction = await Prediction.findOne({ predictorId });
+  if (existingPrediction) {
+    return res.status(400).json({ error: 'لقد أرسلت تنبؤًا مسبقًا' });
+  }
+
+  // إضافة التنبؤ
+  const newPrediction = new Prediction({ gameId, predictorId, content: prediction });
+  await newPrediction.save();
+
+  // إضافة التنبؤ إلى الجلسة
+  game.predictions.push(newPrediction._id);
+  await game.save();
+
+  // التحقق من اكتمال جميع التنبؤات
+  const predictionsCount = await Prediction.countDocuments({ gameId });
+  if (predictionsCount === game.maxPredictors) {
+    game.status = 'completed';
+    await game.save();
+  }
+
+  res.json({ success: true });
 });
