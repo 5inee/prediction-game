@@ -93,7 +93,11 @@ app.post('/api/games/:gameId/join', async (req, res) => {
     // Update the player count (predictors)
     const updatedPredictorCount = Object.keys(game.predictors).length;
     io.to(gameId).emit('predictor_update', {
+<<<<<<< HEAD
       count: updatedPredictorCount,
+=======
+      count: predictorCount + 1,
+>>>>>>> origin/main
       total: game.maxPredictors,
     });
     
@@ -102,7 +106,11 @@ app.post('/api/games/:gameId/join', async (req, res) => {
       game: {
         id: game.id,
         question: game.question,
+<<<<<<< HEAD
         predictorCount: updatedPredictorCount,
+=======
+        predictorCount: predictorCount + 1,
+>>>>>>> origin/main
         maxPredictors: game.maxPredictors,
       },
     });
