@@ -92,9 +92,9 @@ app.post('/api/games/:gameId/predict', async (req, res) => {
         if (!game.predictors.has(predictorId)) {
             return res.status(403).json({ error: 'Not a valid predictor for this game' });
         }
-        if (game.predictions.has(predictorId)) {
-            return res.status(400).json({ error: 'You have already submitted a prediction' });
-        }
+       if (game.predictions.size >= game.maxPredictors) {
+    return res.status(400).json({ error: 'Maximum predictions reached, game is closed' });
+}
         game.predictions.set(predictorId, {
             content: prediction,
             submittedAt: new Date()
@@ -110,8 +110,12 @@ app.post('/api/games/:gameId/predict', async (req, res) => {
             game.revealedToAll = true;
             await game.save();
             io.to(gameId).emit('all_predictions_revealed', { 
-                predictions: Array.from(game.predictions.values())
+                predictions: Object.keys(game.predictions).map(pid => ({
+                    predictor: game.predictors.get(pid), 
+                    prediction: game.predictions.get(pid)
+                }))
             });
+            
         }
         res.json({ success: true, predictionsCount, allPredictionsSubmitted });
     } catch (error) {

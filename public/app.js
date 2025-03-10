@@ -171,55 +171,41 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   socket.on('all_predictions_revealed', (data) => {
-    // Hide waiting elements
     statusMessage.style.display = 'none';
     predictionCount.style.display = 'none';
-    
-    // Clear and populate predictions
     predictionsContainer.innerHTML = '';
-    
-    // Sort predictions by submission time
-    const sortedPredictions = data.predictions.map(item => ({
-    username: item.predictor.username,
-    avatarColor: item.predictor.avatarColor,
-    content: item.prediction.content,
-    submittedAt: new Date(item.prediction.submittedAt)
-})).sort((a, b) => a.submittedAt - b.submittedAt);
-    
-    sortedPredictions.forEach(item => {
-      const { predictor, prediction } = item;
-      const isCurrentUser = predictor.id === currentPredictorId;
-      
-      const predictionCard = document.createElement('div');
-      predictionCard.className = 'prediction-card';
-      
-      const submittedAt = new Date(prediction.submittedAt);
-      const timeString = submittedAt.toLocaleTimeString();
-      
-      // Replace line breaks with <br> tags to preserve formatting
-      const formattedPrediction = item.content.replace(/\n/g, '<br>');
-      
-      predictionCard.innerHTML = `
-        <div class="prediction-header">
-          <div class="predictor-info">
-            <div class="predictor-avatar" style="background-color: ${predictor.avatarColor}">
-              ${predictor.username.charAt(0).toUpperCase()}
+
+    data.predictions.forEach(item => {
+        const { predictor, prediction } = item;
+        const isCurrentUser = predictor.id === currentPredictorId;
+
+        const predictionCard = document.createElement('div');
+        predictionCard.className = 'prediction-card';
+
+        const submittedAt = new Date(prediction.submittedAt);
+        const timeString = submittedAt.toLocaleTimeString();
+
+        const formattedPrediction = prediction.content.replace(/\n/g, '<br>');
+
+        predictionCard.innerHTML = `
+            <div class="prediction-header">
+                <div class="predictor-info">
+                    <div class="predictor-avatar" style="background-color: ${predictor.avatarColor}">
+                        ${predictor.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="predictor-name">
+                        ${predictor.username} ${isCurrentUser ? '(You)' : ''}
+                    </div>
+                </div>
+                <div class="timestamp">${timeString}</div>
             </div>
-            <div class="predictor-name">
-              ${predictor.username} ${isCurrentUser ? '(You)' : ''}
-            </div>
-          </div>
-          <div class="timestamp">${timeString}</div>
-        </div>
-        <div class="prediction-content">
-          ${formattedPrediction}
-        </div>
-      `;
-      
-      predictionsContainer.appendChild(predictionCard);
+            <div class="prediction-content">${formattedPrediction}</div>
+        `;
+
+        predictionsContainer.appendChild(predictionCard);
     });
-    
-    // Show predictions list
+
     predictionsList.style.display = 'block';
-  });
+});
+
 });
