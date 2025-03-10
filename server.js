@@ -3,7 +3,10 @@ const http = require('http');
 const socketIo = require('socket.io');
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
+const dotenv = require('dotenv');
 const Game = require('./models/Game');
+
+dotenv.config(); // Load environment variables from .env file
 
 const app = express();
 const server = http.createServer(app);
