@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const gameQuestionDisplay = document.querySelector('#gameScreen .game-title');
   const gameCodeDisplay = document.querySelector('#gameCode span');
   const waitingMessage = document.getElementById('waitingMessage');
-  const playerCountDisplay = document.querySelector('.player-count');
 
   const predictionForm = document.getElementById('predictionForm');
   const predictionInput = document.getElementById('prediction');
