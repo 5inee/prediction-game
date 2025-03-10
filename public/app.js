@@ -112,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       gameQuestionDisplay.textContent = data.game.question;
       gameCodeDisplay.textContent = data.game.id;
-      playerCountDisplay.textContent = `${data.game.predictorCount}/${data.game.maxPredictors}`;
 
       // Connect to socket room
       socket.emit('join_game', currentGameId);
@@ -162,12 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Socket event handlers
-  // Add a new handler for predictor updates (players joining)
-  socket.on('predictor_update', (data) => {
-    console.log('Predictor update received:', data);
-    playerCountDisplay.textContent = `${data.count}/${data.total}`;
-  });
   
   socket.on('prediction_update', (data) => {
     console.log('Prediction update received:', data);
