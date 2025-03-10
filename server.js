@@ -28,6 +28,26 @@ function generateShortId() {
   return shortId;
 }
 
+// Improved avatar color selection
+function getAvatarColor(index) {
+  // Expanded color palette with distinct colors
+  const colors = [
+    '#4361ee', // blue
+    '#3a0ca3', // deep purple
+    '#7209b7', // purple
+    '#f72585', // pink
+    '#4cc9f0', // light blue
+    '#43aa8b', // teal
+    '#f9c74f', // yellow
+    '#90be6d', // green
+    '#f8961e', // orange
+    '#e63946'  // red
+  ];
+  
+  // Ensure we're using the right index (between 0 and colors.length-1)
+  return colors[index % colors.length];
+}
+
 // Create a new game
 app.post('/api/games', async (req, res) => {
   const gameId = generateShortId();
@@ -56,24 +76,30 @@ app.post('/api/games/:gameId/join', async (req, res) => {
     if (Object.keys(game.predictors).length >= game.maxPredictors) {
       return res.status(400).json({ error: 'Game is full' });
     }
+    
+    // Get the current count of predictors to assign color
+    const predictorCount = Object.keys(game.predictors).length;
     const predictorId = uuidv4();
+    
     game.predictors.set(predictorId, {
       id: predictorId,
       username,
-      avatarColor: getAvatarColor(Object.keys(game.predictors).length),
+      avatarColor: getAvatarColor(predictorCount),
       joinedAt: new Date(),
     });
+    
     await game.save();
     io.to(gameId).emit('predictor_update', {
-      count: Object.keys(game.predictors).length,
+      count: predictorCount + 1,
       total: game.maxPredictors,
     });
+    
     res.json({
       predictorId,
       game: {
         id: game.id,
         question: game.question,
-        predictorCount: Object.keys(game.predictors).length,
+        predictorCount: predictorCount + 1,
         maxPredictors: game.maxPredictors,
       },
     });
@@ -112,7 +138,7 @@ app.post('/api/games/:gameId/predict', async (req, res) => {
       game.revealedToAll = true;
       await game.save();
       
-      // Fix: Create predictions array with correct structure
+      // Create predictions array with correct structure
       const predictionsArray = [];
       
       // Iterate through each prediction
@@ -147,12 +173,6 @@ io.on('connection', (socket) => {
     console.log('Client disconnected');
   });
 });
-
-// Function to get avatar color
-function getAvatarColor(index) {
-  const colors = ['#4361ee', '#3a0ca3', '#7209b7', '#f72585', '#4cc9f0'];
-  return colors[index % colors.length];
-}
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
