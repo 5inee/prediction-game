@@ -98,12 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       const data = await response.json();
-      
-      // Set up the game
       currentGameId = data.game.id;
       currentPredictorId = data.predictorId;
       
-      // Update UI
       joinScreen.style.display = 'none';
       gameScreen.style.display = 'block';
       
@@ -115,9 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
       gameCodeDisplay.textContent = data.game.id;
       playerCountDisplay.textContent = `${data.game.predictorCount}/${data.game.maxPredictors}`;
       
-      // Connect to socket room
       socket.emit('join_game', currentGameId);
-      
     } catch (error) {
       console.error('Error joining game:', error);
       alert(error.message || 'Failed to join game. Please try again.');
@@ -141,10 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch(`/api/games/${currentGameId}/predict`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          predictorId: currentPredictorId, 
-          prediction 
-        })
+        body: JSON.stringify({ predictorId: currentPredictorId, prediction })
       });
       
       if (!response.ok) {
@@ -152,20 +144,14 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(error.error || 'Failed to submit prediction');
       }
       
-      const data = await response.json();
-      
-      // Update UI
-      predictionForm.style.display = 'none';
       statusMessage.style.display = 'block';
       hasSubmitted = true;
-      
     } catch (error) {
       console.error('Error submitting prediction:', error);
       alert(error.message || 'Failed to submit prediction. Please try again.');
     }
   });
   
-  // Socket event handlers
   socket.on('prediction_update', (data) => {
     predictionCount.textContent = `${data.count} of ${data.total} predictions submitted`;
   });
@@ -174,38 +160,18 @@ document.addEventListener('DOMContentLoaded', () => {
     statusMessage.style.display = 'none';
     predictionCount.style.display = 'none';
     predictionsContainer.innerHTML = '';
-
+    
     data.predictions.forEach(item => {
-        const { predictor, prediction } = item;
-        const isCurrentUser = predictor.id === currentPredictorId;
-
-        const predictionCard = document.createElement('div');
-        predictionCard.className = 'prediction-card';
-
-        const submittedAt = new Date(prediction.submittedAt);
-        const timeString = submittedAt.toLocaleTimeString();
-
-        const formattedPrediction = prediction.content.replace(/\n/g, '<br>');
-
-        predictionCard.innerHTML = `
-            <div class="prediction-header">
-                <div class="predictor-info">
-                    <div class="predictor-avatar" style="background-color: ${predictor.avatarColor}">
-                        ${predictor.username.charAt(0).toUpperCase()}
-                    </div>
-                    <div class="predictor-name">
-                        ${predictor.username} ${isCurrentUser ? '(You)' : ''}
-                    </div>
-                </div>
-                <div class="timestamp">${timeString}</div>
-            </div>
-            <div class="prediction-content">${formattedPrediction}</div>
-        `;
-
-        predictionsContainer.appendChild(predictionCard);
+      const { predictor, prediction } = item;
+      const formattedPrediction = prediction.content.replace(/\n/g, '<br>');
+      
+      const predictionCard = document.createElement('div');
+      predictionCard.className = 'prediction-card';
+      predictionCard.innerHTML = `<strong>${predictor.username}:</strong> ${formattedPrediction}`;
+      
+      predictionsContainer.appendChild(predictionCard);
     });
-
+    
     predictionsList.style.display = 'block';
-});
-
+  });
 });
