@@ -179,9 +179,12 @@ document.addEventListener('DOMContentLoaded', () => {
     predictionsContainer.innerHTML = '';
     
     // Sort predictions by submission time
-    const sortedPredictions = data.predictions.sort((a, b) => 
-      new Date(a.prediction.submittedAt) - new Date(b.prediction.submittedAt)
-    );
+    const sortedPredictions = data.predictions.map(item => ({
+    username: item.predictor.username,
+    avatarColor: item.predictor.avatarColor,
+    content: item.prediction.content,
+    submittedAt: new Date(item.prediction.submittedAt)
+})).sort((a, b) => a.submittedAt - b.submittedAt);
     
     sortedPredictions.forEach(item => {
       const { predictor, prediction } = item;
@@ -194,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const timeString = submittedAt.toLocaleTimeString();
       
       // Replace line breaks with <br> tags to preserve formatting
-      const formattedPrediction = prediction.content.replace(/\n/g, '<br>');
+      const formattedPrediction = item.content.replace(/\n/g, '<br>');
       
       predictionCard.innerHTML = `
         <div class="prediction-header">

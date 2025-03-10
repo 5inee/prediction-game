@@ -66,7 +66,15 @@ app.post('/api/games/:gameId/join', async (req, res) => {
             count: Object.keys(game.predictors).length, 
             total: game.maxPredictors 
         });
-        res.json({ predictorId, game });
+        res.json({ 
+    predictorId, 
+    game: {
+        id: game.id,
+        question: game.question,
+        predictorCount: Object.keys(game.predictors).length,
+        maxPredictors: game.maxPredictors
+    } 
+});
     } catch (error) {
         res.status(500).json({ error: 'Error joining game' });
     }
