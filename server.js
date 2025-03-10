@@ -111,11 +111,24 @@ app.post('/api/games/:gameId/predict', async (req, res) => {
     if (allPredictionsSubmitted && !game.revealedToAll) {
       game.revealedToAll = true;
       await game.save();
+      
+      // Fix: Create predictions array with correct structure
+      const predictionsArray = [];
+      
+      // Iterate through each prediction
+      for (const [pid, predictionData] of game.predictions.entries()) {
+        // Get the predictor information
+        const predictor = game.predictors.get(pid);
+        
+        // Add to the array with the right structure
+        predictionsArray.push({
+          predictor,
+          prediction: predictionData
+        });
+      }
+      
       io.to(gameId).emit('all_predictions_revealed', {
-        predictions: Object.keys(game.predictions).map(pid => ({
-          predictor: game.predictors.get(pid),
-          prediction: game.predictions.get(pid),
-        })),
+        predictions: predictionsArray
       });
     }
     res.json({ success: true, predictionsCount, allPredictionsSubmitted });
