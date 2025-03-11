@@ -206,4 +206,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     predictionsList.style.display = 'block';
   });
-});
+})
