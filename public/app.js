@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Socket event handlers
   socket.on('predictor_update', (data) => {
     // Update player count with the data from the server
-    playerCountDisplay.textContent = `${data.count}/${data.total}`;
+    playerCountDisplay.textContent = ``;
   });
 
   socket.on('prediction_update', (data) => {
