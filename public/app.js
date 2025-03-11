@@ -113,7 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       gameQuestionDisplay.textContent = data.game.question;
       gameCodeDisplay.textContent = data.game.id;
-      playerCountDisplay.textContent = `${data.game.predictorCount}/${data.game.maxPredictors}`; // Initial player count
+      
+      // Let the socket event handle player count update
+      // Don't set player count here
 
       // Connect to socket room
       socket.emit('join_game', currentGameId);
@@ -165,7 +167,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Socket event handlers
   socket.on('predictor_update', (data) => {
-    playerCountDisplay.textContent = `${data.count}/${data.total}`; // Update player count
+    // Update player count with the data from the server
+    playerCountDisplay.textContent = `${data.count}/${data.total}`;
+  });
+
+  socket.on('prediction_update', (data) => {
+    // Update the prediction count display if needed
+    if (predictionCount) {
+      predictionCount.style.display = 'block';
+      predictionCount.textContent = `Predictions: ${data.count}/${data.total}`;
+    }
   });
 
   socket.on('all_predictions_revealed', (data) => {
