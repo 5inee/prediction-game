@@ -112,17 +112,17 @@ app.post('/api/games/:gameId/predict', async (req, res) => {
       game.revealedToAll = true;
       await game.save();
       
-      // Fix: Create predictions array with correct structure
+      // Create predictions array with correct structure
       const predictionsArray = [];
       
       // Iterate through each prediction
       for (const [pid, predictionData] of game.predictions.entries()) {
-        // Get the predictor information
+        // Get the predictor information - ensure we get the full object from the Map
         const predictor = game.predictors.get(pid);
         
         // Add to the array with the right structure
         predictionsArray.push({
-          predictor,
+          predictor: predictor,
           prediction: predictionData
         });
       }
