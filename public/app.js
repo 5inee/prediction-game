@@ -164,11 +164,20 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Socket event handlers
+  // Add a new handler for predictor updates (players joining)
+  socket.on('predictor_update', (data) => {
+    console.log('Predictor update received:', data);
+    playerCountDisplay.textContent = `${data.count}/${data.total}`;
+  });
+  
   socket.on('prediction_update', (data) => {
+    console.log('Prediction update received:', data);
     predictionCount.textContent = `${data.count} of ${data.total} predictions submitted`;
+    predictionCount.style.display = 'block';
   });
 
   socket.on('all_predictions_revealed', (data) => {
+    console.log('All predictions revealed:', data);
     statusMessage.style.display = 'none';
     predictionCount.style.display = 'none';
     predictionsContainer.innerHTML = '';
