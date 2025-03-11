@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PredictBattle - Real-time Prediction Game</title>
   <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#4361ee">
 </head>
 <body>
   <header>
@@ -25,8 +26,8 @@
       <h1 class="game-title">Join a Prediction Game</h1>
       
       <div class="form-group">
-        <label for="gameId">Game ID:</label>
-        <input type="text" id="gameId" placeholder="Enter 6-character game ID">
+        <label for="gameId">Game Code:</label>
+        <input type="text" id="gameId" placeholder="Enter 6-character game code">
       </div>
       
       <div class="form-group">
@@ -50,6 +51,11 @@
         <textarea id="gameQuestion" placeholder="Enter your question here.."></textarea>
       </div>
       
+      <div class="form-group">
+        <label for="maxPredictors">Maximum Players:</label>
+        <input type="number" id="maxPredictors" min="2" max="20" value="5">
+      </div>
+      
       <button id="createNewGameBtn" class="btn btn-primary">Create Game</button>
       <button id="backToJoinBtn" class="btn btn-link">Back</button>
     </div>
@@ -61,8 +67,23 @@
       <h1 id="gameQuestion" class="game-title">Enter your question..</h1>
       
       <div id="gameInfo" class="game-info">
-        <div id="gameCode" class="game-code">Game ID: <span></span></div>
-        <div id="waitingMessage" class="waiting-message">Waiting for players to join... <span class="player-count">1/5</span></div>
+        <div id="gameCode" class="game-code">
+          Game Code: <span></span>
+          <button id="copyGameLink" class="btn btn-icon" title="Copy game link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+        </div>
+        <div id="waitingMessage" class="waiting-message">
+          Players: <span class="player-count">1/5</span>
+        </div>
+      </div>
+      
+      <div id="players-container">
+        <h3>Players</h3>
+        <div id="playersList" class="players-list"></div>
       </div>
       
       <div id="predictionForm" class="prediction-form">
@@ -73,18 +94,24 @@
         <button id="submitPredictionBtn" type="button" class="btn btn-primary">Submit Prediction</button>
       </div>
       
-      <div id="statusMessage" class="status-message">
-        Your prediction has been sent. The rest of the competitors' predictions will be revealed when all predictions are submitted.
+      <div id="statusMessage" class="status-message" style="display: none;">
+        Your prediction has been sent. Waiting for others to submit their predictions.
       </div>
       
       <div id="predictionCount" class="prediction-count"></div>
       
-      <div id="predictionsList" class="predictions-list">
+      <div id="predictionsList" class="predictions-list" style="display: none;">
         <h3>All Predictions</h3>
         <div id="predictionsContainer"></div>
       </div>
     </div>
   </div>
+  
+  <footer>
+    <div class="container">
+      <p>PredictBattle © 2025 - Make predictions with friends!</p>
+    </div>
+  </footer>
   
   <script src="/socket.io/socket.io.js"></script>
   <script src="app.js"></script>
