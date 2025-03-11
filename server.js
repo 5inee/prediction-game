@@ -34,7 +34,7 @@ app.post('/api/games', async (req, res) => {
   const newGame = new Game({
     id: gameId,
     question: req.body.question || 'Make your prediction',
-    maxPredictors: 5, // Default max players
+    maxPredictors: 4, // Default max players
   });
   try {
     await newGame.save();
