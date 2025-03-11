@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PredictBattle - Real-time Prediction Game</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <meta name="description" content="Play PredictBattle - a real-time game where you make predictions with friends">
 </head>
 <body>
   <header>
@@ -26,15 +28,20 @@
       
       <div class="form-group">
         <label for="gameId">Game ID:</label>
-        <input type="text" id="gameId" placeholder="Enter 6-character game ID">
+        <input type="text" id="gameId" placeholder="Enter 6-character game ID" maxlength="6">
       </div>
       
       <div class="form-group">
         <label for="username">Your Name:</label>
-        <input type="text" id="username" placeholder="Enter your name">
+        <input type="text" id="username" placeholder="Enter your name" maxlength="30">
       </div>
       
-      <button id="joinGameBtn" class="btn btn-primary">Join Game</button>
+      <div id="invalidGameMessage" class="error-message" style="display: none;"></div>
+      
+      <button id="joinGameBtn" class="btn btn-primary">
+        <span id="joinSpinner" class="spinner" style="display: none;"></span>
+        Join Game
+      </button>
       <div class="separator">OR</div>
       <button id="createGameBtn" class="btn btn-secondary">Create New Game</button>
     </div>
@@ -47,10 +54,26 @@
       
       <div class="form-group">
         <label for="gameQuestion">Question for Predictions:</label>
-        <textarea id="gameQuestion" placeholder="Enter your question here.."></textarea>
+        <textarea id="gameQuestion" placeholder="Enter your question here.." maxlength="500"></textarea>
       </div>
       
-      <button id="createNewGameBtn" class="btn btn-primary">Create Game</button>
+      <div class="form-group">
+        <label for="maxPredictors">Maximum Players:</label>
+        <select id="maxPredictors">
+          <option value="2">2 players</option>
+          <option value="3">3 players</option>
+          <option value="4">4 players</option>
+          <option value="5" selected>5 players</option>
+          <option value="10">10 players</option>
+          <option value="15">15 players</option>
+          <option value="20">20 players</option>
+        </select>
+      </div>
+      
+      <button id="createNewGameBtn" class="btn btn-primary">
+        <span id="createSpinner" class="spinner" style="display: none;"></span>
+        Create Game
+      </button>
       <button id="backToJoinBtn" class="btn btn-link">Back</button>
     </div>
   </div>
@@ -61,25 +84,32 @@
       <h1 id="gameQuestion" class="game-title">Enter your question..</h1>
       
       <div id="gameInfo" class="game-info">
-        <div id="gameCode" class="game-code">Game ID: <span></span></div>
+        <div class="game-controls">
+          <div id="gameCode" class="game-code">Game ID: <span></span></div>
+          <button id="copyLinkBtn" class="btn btn-sm">Copy Game Link</button>
+        </div>
         <div id="waitingMessage" class="waiting-message">Waiting for players to join... <span class="player-count">1/5</span></div>
       </div>
       
       <div id="predictionForm" class="prediction-form">
         <div class="form-group">
           <label for="prediction">Your Prediction:</label>
-          <textarea id="prediction" placeholder="Enter your prediction here..."></textarea>
+          <textarea id="prediction" placeholder="Enter your prediction here..." maxlength="1000"></textarea>
+          <div id="charCountDisplay" class="char-count">0/1000</div>
         </div>
-        <button id="submitPredictionBtn" type="button" class="btn btn-primary">Submit Prediction</button>
+        <button id="submitPredictionBtn" type="button" class="btn btn-primary">
+          <span id="submitSpinner" class="spinner" style="display: none;"></span>
+          Submit Prediction
+        </button>
       </div>
       
-      <div id="statusMessage" class="status-message">
-        Your prediction has been sent. The rest of the competitors' predictions will be revealed when all predictions are submitted.
+      <div id="statusMessage" class="status-message" style="display: none;">
+        Your prediction has been submitted! All predictions will be revealed when everyone has submitted.
       </div>
       
-      <div id="predictionCount" class="prediction-count"></div>
+      <div id="predictionCount" class="prediction-count" style="display: none;"></div>
       
-      <div id="predictionsList" class="predictions-list">
+      <div id="predictionsList" class="predictions-list" style="display: none;">
         <h3>All Predictions</h3>
         <div id="predictionsContainer"></div>
       </div>
