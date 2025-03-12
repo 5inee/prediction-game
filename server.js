@@ -44,6 +44,7 @@ app.post('/api/games', async (req, res) => {
   }
 });
 
+
 // Join a game
 app.post('/api/games/:gameId/join', async (req, res) => {
   const { gameId } = req.params;
@@ -56,13 +57,18 @@ app.post('/api/games/:gameId/join', async (req, res) => {
     if (Object.keys(game.predictors).length >= game.maxPredictors) {
       return res.status(400).json({ error: 'Game is full' });
     }
+    
+    // Get current predictor count for color selection
+    const predictorCount = Object.keys(game.predictors).length;
+    
     const predictorId = uuidv4();
     game.predictors.set(predictorId, {
       id: predictorId,
       username,
-      avatarColor: getAvatarColor(Object.keys(game.predictors).length),
+      avatarColor: getAvatarColor(predictorCount),
       joinedAt: new Date(),
     });
+    
     await game.save();
     io.to(gameId).emit('predictor_update', {
       count: Object.keys(game.predictors).length,
