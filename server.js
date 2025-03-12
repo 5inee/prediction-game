@@ -20,7 +20,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Function to generate a short game ID
 function generateShortId() {
-  const characters = ')CP*6(aJqx4w^tQsnD3p!EhcyAId278MmUjirY$@Xge0%FuR#vGo9b&STZW1LkKVfOHl5BNz';
+  const characters = 'CP6aJqx4w^tQsnD3p!EhcyAId278MmUjirY$@Xge0%FuR#vGo9b&STZW1LkKVfOHl5BNz';
   let shortId = '';
   for (let i = 0; i < 6; i++) {
     shortId += characters.charAt(Math.floor(Math.random() * characters.length));
