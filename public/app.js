@@ -35,13 +35,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const predictionsList = document.getElementById('predictionsList');
   const predictionsContainer = document.getElementById('predictionsContainer');
 
+  // Error Alert Elements
+  const errorAlert = document.getElementById('errorAlert');
+  const errorMessage = document.getElementById('errorMessage');
+  const closeErrorBtn = document.getElementById('closeErrorBtn');
+
   // App State
   let currentGameId = null;
   let currentPredictorId = null;
   let hasSubmitted = false;
   
-  // Secret code constant (this is the secret code '021')
+  // Secret code constant
   const CORRECT_SECRET_CODE = '021';
+
+  // Error Alert Functions
+  function showError(message) {
+    errorMessage.textContent = message;
+    errorAlert.classList.add('show');
+    
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+      hideError();
+    }, 5000);
+  }
+
+  function hideError() {
+    errorAlert.classList.remove('show');
+  }
+
+  // Add event listener to close button
+  closeErrorBtn.addEventListener('click', hideError);
 
   // Event Listeners
   createGameBtn.addEventListener('click', () => {
@@ -62,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const secretCode = secretCodeInput.value.trim();
     
     if (!question) {
-      alert('Please enter a question for the game');
+      showError('Please enter a question for the game');
       return;
     }
     
@@ -87,18 +110,24 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create game');
+      }
+      
       gameIdInput.value = data.gameId;
 
       createGameScreen.style.display = 'none';
       joinScreen.style.display = 'block';
 
-      alert(`Game created! Your Game Code is: ${data.gameId}`);
+      // Use a success alert or notification here instead
+      showError(`Game created! Your Game Code is: ${data.gameId}`);
       
       // Clear the secret code input for security
       secretCodeInput.value = '';
     } catch (error) {
       console.error('Error creating game:', error);
-      alert('Failed to create game. Please try again.');
+      showError(error.message || 'Failed to create game. Please try again.');
     }
   });
 
@@ -107,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const username = usernameInput.value.trim();
 
     if (!gameId || !username) {
-      alert('Please enter both Game ID and your name');
+      showError('Please enter both Game ID and your name');
       return;
     }
 
@@ -144,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
       socket.emit('join_game', currentGameId);
     } catch (error) {
       console.error('Error joining game:', error);
-      alert(error.message || 'Failed to join game. Please try again.');
+      showError(error.message || 'Failed to join game. Please try again.');
     }
   });
 
@@ -152,12 +181,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const prediction = predictionInput.value.trim();
 
     if (!prediction) {
-      alert('Please enter your prediction');
+      showError('Please enter your prediction');
       return;
     }
 
     if (hasSubmitted) {
-      alert('You have already submitted a prediction');
+      showError('You have already submitted a prediction');
       return;
     }
 
@@ -184,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
       hasSubmitted = true;
     } catch (error) {
       console.error('Error submitting prediction:', error);
-      alert(error.message || 'Failed to submit prediction. Please try again.');
+      showError(error.message || 'Failed to submit prediction. Please try again.');
     }
   });
 
