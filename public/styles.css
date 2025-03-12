@@ -299,3 +299,36 @@ label {
   background-color: var(--gray);
   cursor: not-allowed;
 }
+/* Add these styles to your existing CSS file */
+
+.error-message {
+  color: #e63946;
+  font-size: 14px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+input[type="password"]:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+.shake {
+  animation: shake 0.5s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}

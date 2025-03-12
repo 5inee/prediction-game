@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const createGameBtn = document.getElementById('createGameBtn');
 
   const gameQuestionInput = document.getElementById('gameQuestion');
+  const secretCodeInput = document.getElementById('secretCode');
+  const secretCodeError = document.getElementById('secretCodeError');
   const createNewGameBtn = document.getElementById('createNewGameBtn');
   const backToJoinBtn = document.getElementById('backToJoinBtn');
 
@@ -37,11 +39,17 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentGameId = null;
   let currentPredictorId = null;
   let hasSubmitted = false;
+  
+  // Secret code constant (this is the secret code '021')
+  const CORRECT_SECRET_CODE = '021';
 
   // Event Listeners
   createGameBtn.addEventListener('click', () => {
     joinScreen.style.display = 'none';
     createGameScreen.style.display = 'block';
+    // Clear any previous error messages
+    secretCodeError.style.display = 'none';
+    secretCodeInput.classList.remove('shake');
   });
 
   backToJoinBtn.addEventListener('click', () => {
@@ -51,8 +59,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   createNewGameBtn.addEventListener('click', async () => {
     const question = gameQuestionInput.value.trim();
+    const secretCode = secretCodeInput.value.trim();
+    
     if (!question) {
       alert('Please enter a question for the game');
+      return;
+    }
+    
+    // Validate the secret code
+    if (secretCode !== CORRECT_SECRET_CODE) {
+      secretCodeError.style.display = 'block';
+      secretCodeInput.classList.add('shake');
+      
+      // Remove the shake class after the animation completes
+      setTimeout(() => {
+        secretCodeInput.classList.remove('shake');
+      }, 500);
+      
       return;
     }
 
@@ -70,6 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
       joinScreen.style.display = 'block';
 
       alert(`Game created! Your Game Code is: ${data.gameId}`);
+      
+      // Clear the secret code input for security
+      secretCodeInput.value = '';
     } catch (error) {
       console.error('Error creating game:', error);
       alert('Failed to create game. Please try again.');
@@ -114,9 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
       gameQuestionDisplay.textContent = data.game.question;
       gameCodeDisplay.textContent = data.game.id;
       
-      // Let the socket event handle player count update
-      // Don't set player count here
-
       // Connect to socket room
       socket.emit('join_game', currentGameId);
     } catch (error) {
