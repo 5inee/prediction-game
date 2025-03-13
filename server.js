@@ -60,12 +60,13 @@ app.post('/api/games/:gameId/join', async (req, res) => {
     // Create a new predictor entry
     const predictorId = uuidv4();
     
-    // Generate a unique color index based on existing predictors
-    // This ensures each user gets a different color even with concurrent joins
+    // Get existing colors - properly iterate through the Map structure
     const existingColors = [];
-    game.predictors.forEach(predictor => {
-      existingColors.push(predictor.avatarColor);
-    });
+    for (const [_, predictor] of game.predictors.entries()) {
+      if (predictor.avatarColor) {
+        existingColors.push(predictor.avatarColor);
+      }
+    }
     
     // Find a color that hasn't been used yet
     const colors = ['#4361ee', '#3a0ca3', '#7209b7', '#f72585', '#4cc9f0'];
@@ -79,7 +80,8 @@ app.post('/api/games/:gameId/join', async (req, res) => {
       }
     }
     
-    // If all colors are used, fall back to the index approach
+    // If all colors are used (or there was an issue finding unused colors),
+    // fall back to the simple index approach
     if (!avatarColor) {
       const colorIndex = Object.keys(game.predictors).length;
       avatarColor = colors[colorIndex % colors.length];
@@ -109,6 +111,7 @@ app.post('/api/games/:gameId/join', async (req, res) => {
       },
     });
   } catch (error) {
+    console.error('Error in join game:', error);
     res.status(500).json({ error: 'Error joining game' });
   }
 });
@@ -164,6 +167,7 @@ app.post('/api/games/:gameId/predict', async (req, res) => {
     }
     res.json({ success: true, predictionsCount, allPredictionsSubmitted });
   } catch (error) {
+    console.error('Error in predict:', error);
     res.status(500).json({ error: 'Error submitting prediction' });
   }
 });
