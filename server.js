@@ -44,7 +44,6 @@ app.post('/api/games', async (req, res) => {
   }
 });
 
-
 // Join a game
 app.post('/api/games/:gameId/join', async (req, res) => {
   const { gameId } = req.params;
@@ -58,14 +57,39 @@ app.post('/api/games/:gameId/join', async (req, res) => {
       return res.status(400).json({ error: 'Game is full' });
     }
     
-    // Get current predictor count for color selection
-    const predictorCount = Object.keys(game.predictors).length;
-    
+    // Create a new predictor entry
     const predictorId = uuidv4();
+    
+    // Generate a unique color index based on existing predictors
+    // This ensures each user gets a different color even with concurrent joins
+    const existingColors = [];
+    game.predictors.forEach(predictor => {
+      existingColors.push(predictor.avatarColor);
+    });
+    
+    // Find a color that hasn't been used yet
+    const colors = ['#4361ee', '#3a0ca3', '#7209b7', '#f72585', '#4cc9f0'];
+    let avatarColor;
+    
+    // First try to find an unused color
+    for (const color of colors) {
+      if (!existingColors.includes(color)) {
+        avatarColor = color;
+        break;
+      }
+    }
+    
+    // If all colors are used, fall back to the index approach
+    if (!avatarColor) {
+      const colorIndex = Object.keys(game.predictors).length;
+      avatarColor = colors[colorIndex % colors.length];
+    }
+    
+    // Add the new predictor with the selected color
     game.predictors.set(predictorId, {
       id: predictorId,
       username,
-      avatarColor: getAvatarColor(predictorCount),
+      avatarColor: avatarColor,
       joinedAt: new Date(),
     });
     
@@ -74,6 +98,7 @@ app.post('/api/games/:gameId/join', async (req, res) => {
       count: Object.keys(game.predictors).length,
       total: game.maxPredictors,
     });
+    
     res.json({
       predictorId,
       game: {
