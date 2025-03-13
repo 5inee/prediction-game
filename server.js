@@ -44,6 +44,7 @@ app.post('/api/games', async (req, res) => {
   }
 });
 
+
 // Join a game
 app.post('/api/games/:gameId/join', async (req, res) => {
   const { gameId } = req.params;
@@ -57,41 +58,14 @@ app.post('/api/games/:gameId/join', async (req, res) => {
       return res.status(400).json({ error: 'Game is full' });
     }
     
-    // Create a new predictor entry
+    // Get current predictor count for color selection
+    const predictorCount = Object.keys(game.predictors).length;
+    
     const predictorId = uuidv4();
-    
-    // Get existing colors - properly iterate through the Map structure
-    const existingColors = [];
-    for (const [_, predictor] of game.predictors.entries()) {
-      if (predictor.avatarColor) {
-        existingColors.push(predictor.avatarColor);
-      }
-    }
-    
-    // Find a color that hasn't been used yet
-    const colors = ['#4361ee', '#3a0ca3', '#7209b7', '#f72585', '#4cc9f0'];
-    let avatarColor;
-    
-    // First try to find an unused color
-    for (const color of colors) {
-      if (!existingColors.includes(color)) {
-        avatarColor = color;
-        break;
-      }
-    }
-    
-    // If all colors are used (or there was an issue finding unused colors),
-    // fall back to the simple index approach
-    if (!avatarColor) {
-      const colorIndex = Object.keys(game.predictors).length;
-      avatarColor = colors[colorIndex % colors.length];
-    }
-    
-    // Add the new predictor with the selected color
     game.predictors.set(predictorId, {
       id: predictorId,
       username,
-      avatarColor: avatarColor,
+      avatarColor: getAvatarColor(predictorCount),
       joinedAt: new Date(),
     });
     
@@ -100,7 +74,6 @@ app.post('/api/games/:gameId/join', async (req, res) => {
       count: Object.keys(game.predictors).length,
       total: game.maxPredictors,
     });
-    
     res.json({
       predictorId,
       game: {
@@ -111,7 +84,6 @@ app.post('/api/games/:gameId/join', async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error in join game:', error);
     res.status(500).json({ error: 'Error joining game' });
   }
 });
@@ -167,7 +139,6 @@ app.post('/api/games/:gameId/predict', async (req, res) => {
     }
     res.json({ success: true, predictionsCount, allPredictionsSubmitted });
   } catch (error) {
-    console.error('Error in predict:', error);
     res.status(500).json({ error: 'Error submitting prediction' });
   }
 });
