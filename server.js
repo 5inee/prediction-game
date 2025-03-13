@@ -119,7 +119,7 @@ app.post('/api/games/:gameId/predict', async (req, res) => {
       await game.save();
       
       // Fix: Create predictions array with correct structure
-      const predictionsArray = [];
+      const predictionsArray =[];
       
       // Iterate through each prediction
       for (const [pid, predictionData] of game.predictions.entries()) {
