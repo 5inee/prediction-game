@@ -105,38 +105,49 @@ document.addEventListener('DOMContentLoaded', () => {
   joinGameBtn.addEventListener('click', async () => {
     const gameId = gameIdInput.value.trim();
     const username = usernameInput.value.trim();
-
+  
     if (!gameId || !username) {
       alert('Please enter both Game ID and your name');
       return;
     }
-
+  
     try {
       const response = await fetch(`/api/games/${gameId}/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username }),
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to join game');
+  
+      // Log raw response for debugging
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+      
+      // Parse the response as JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        alert('Server returned invalid data. Please try again or contact support.');
+        return;
       }
-
-      const data = await response.json();
-
+  
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to join game');
+      }
+  
       // Set up the game
       currentGameId = data.game.id;
       currentPredictorId = data.predictorId;
-
+  
       // Update UI
       joinScreen.style.display = 'none';
       gameScreen.style.display = 'block';
-
+  
       userInfoElement.style.display = 'flex';
       usernameDisplay.textContent = username;
       userAvatar.textContent = username.charAt(0).toUpperCase();
-
+  
       gameQuestionDisplay.textContent = data.game.question;
       gameCodeDisplay.textContent = data.game.id;
       
