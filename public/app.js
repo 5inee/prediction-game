@@ -112,30 +112,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     try {
+      console.log('Attempting to join game:', gameId, 'as', username);
+      
       const response = await fetch(`/api/games/${gameId}/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username }),
+        // Add cache control headers to prevent caching
+        cache: 'no-cache',
       });
-  
-      // Log raw response for debugging
-      const responseText = await response.text();
-      console.log('Raw response:', responseText);
       
-      // Parse the response as JSON
+      // Use this approach to debug the raw response
+      const responseText = await response.text();
+      console.log('Raw server response:', responseText);
+      
+      // Try to parse the response as JSON
       let data;
       try {
         data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('JSON parse error:', parseError);
-        alert('Server returned invalid data. Please try again or contact support.');
+      } catch (e) {
+        console.error('Error parsing JSON response:', e);
+        alert('The server returned an invalid response. Please try again or contact support.');
         return;
       }
-  
+      
+      // Check if the response contains an error
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to join game');
+        throw new Error(data.error || 'Unknown error joining game');
       }
   
+      console.log('Join successful. Game data:', data);
+      
       // Set up the game
       currentGameId = data.game.id;
       currentPredictorId = data.predictorId;
@@ -147,6 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
       userInfoElement.style.display = 'flex';
       usernameDisplay.textContent = username;
       userAvatar.textContent = username.charAt(0).toUpperCase();
+      // Set avatar background color
+      if (data.game && data.game.avatarColor) {
+        userAvatar.style.backgroundColor = data.game.avatarColor;
+      }
   
       gameQuestionDisplay.textContent = data.game.question;
       gameCodeDisplay.textContent = data.game.id;
