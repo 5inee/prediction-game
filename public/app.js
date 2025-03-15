@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
       predictionCard.className = 'prediction-card';
 
       const submittedAt = new Date(prediction.submittedAt);
-      const timeString = submittedAt.toLocaleTimeString( { hour: '2-digit', minute: '2-digit' });
+      const timeString = submittedAt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 
       const formattedPrediction = prediction.content.replace(/\n/g, '<br>');
 
